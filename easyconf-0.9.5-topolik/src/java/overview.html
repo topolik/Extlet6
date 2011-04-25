@@ -1,0 +1,292 @@
+<html>
+<head>
+  <title>Documentation for easyconf</title>
+</head>
+
+<body>
+The purpose of easyconf is to provide an easy to use and centralized library to configure software components from XML and properties configuration files. Easyconf simplifies the management of different configuration of an application in different environments (preproduction, production, etc. or for different deployments).
+
+The purpose of easyconf is to provide an easy to use and centralized library
+to access documentation. Its main features are:
+<ol>
+ <li>Support for both properties and XML files (or a mix of both)</li>
+ <li>Support for changing the configuration for different environments and subprojects</li>
+ <li>Support for accessing properties from JSP files</li>
+ <li>Support for several configuration modules (called components) to allow
+ different software components running in the same JVM to use separate
+ configuration files.</li>
+</ol>
+
+<h1>Quick start</h1>
+
+Easyconf consist of a central component
+(ConfReader) that returns the configuration of a given
+component. This class has a static method called <code>getConfiguration</code> 
+which must be
+given the name of a component. The name of the component can be any String
+which can be used to identify it within easyconf.
+
+<h2>Reading the configuration from Java</h2>
+Following is an example of how to use this class:
+<pre>
+
+ComponentConfiguration conf = ConfReader.getConfiguration("my-component");
+
+</pre>
+
+The result is an object with the configuration of the given
+component. The component configuration contains a properties based configuration
+and a XML based configuration. Let's start with the first one. Note that we'll asume from
+now on that we'll be working with the configuration of a component called
+<i>my-component</i>.
+<br/>
+The properties are read from a file named after the component name. In our example
+the properties would be read from the file <tt>my-component.properties</tt>
+(later you'll see that other files will also be read to allow a property
+value to be overridden in different environments). This simple convention hides 
+the name of the file from the program code. 
+<br/>
+Once you have the <code>ComponentConfiguration</code>
+you can just read the property values which are automatically converted to
+integers, booleans, lists, etc. Following are two examples of how to read typed
+properties:
+
+<pre>
+  List portlets = conf.getProperties().getList("static.portlets");
+  boolean disable = conf.getProperties().getBoolean("registration.disable");
+</pre>
+
+On the other hand the XML configuration can be converted to any object
+by filling a digester rules file. The XML configuration of the previous example
+will be read from a file named <tt>my-component.xml</tt> and its digester
+rules from <tt>my-component.digesterRules.xml</tt>. The XML parsing converts
+the configuration to a <b>set of user defined object classes</b>. For example
+imagine that we want to configure some databases specifying it's tables and
+types of tables. We define two classes: <code>DatabaseConf</code> and
+<code>Table</code>. Then we write the XML configuration in
+<code>my-component.xml</code>, for example:
+<pre>
+&lt;database>
+  &lt;tables>
+    &lt;table tableType="type1"/>
+  &lt;/tables>
+&lt;/database>
+
+</pre>
+
+Next we write the Digester rules in <code>my-component.digesterRules.xml</code>:
+<pre>
+&lt;!DOCTYPE digester-rules PUBLIC
+   "-//Jakarta Apache //DTD digester-rules XML V1.0//EN"
+   "digester-rules.dtd">
+&lt;digester-rules>
+  &lt;pattern value="database">
+    &lt;object-create-rule classname="com.foo.bar.DatabaseConf"/>
+    &lt;pattern value="tables/table">
+      &lt;object-create-rule classname="com.foo.bar.Table"/>
+      &lt;set-properties-rule/>
+      &lt;set-next-rule methodname="addTable" paramtype="com.foo.bar.Table"/>
+    &lt;/pattern>
+  &lt;/pattern>
+&lt;/digester-rules>
+</pre>
+Finally, just one line of code is necesary to obtain the objects which
+have resulted from parsing the configuration. Easyconf calls the result an
+object graph because it returns one object which can contain other objects
+inside, which can contain even more objects, etc. Here is an example of code
+of retrieving and using the object graph of the previous XML configuration:
+<pre>
+    DatabaseConf dbconf = (DatabaseConf) conf.getConfigurationObject();
+    Table firstTable = dbconf.getTables().get(0);
+    String tableType = firstTable.getTableType();
+</pre>
+
+<p>
+For more  information about how to write the rules files check the <a
+href="http://jakarta.apache.org/commons/digester/api/org/apache/commons/digester/xmlrules/package-summary.html">digester
+xml rules documentation</a>
+A variant of this example is using properties from the properties
+based configuration in the XML file. For example:
+<pre>
+&lt;database>
+  &lt;tables>
+    &lt;table tableType="${table.type1}"/>
+  &lt;/tables>
+&lt;/database>
+</pre>
+Where table.type1 is defined in a properties file as:
+<pre>
+table.type1=type1
+</pre>
+This allows to change this value for different environments.
+<p>
+In a next section is a more detailed description of a component configurations.
+</p>
+<h2>Reading the configuration from a JSP page</h2>
+EasyConf provides a taglib to make it very easy to read the
+configuration of a component from a JSP. It is limited to properties
+because that's what is most commonly needed in this situations. Herea
+is a self explaining example:
+<pre>
+    &lt;%@ taglib uri="/WEB-INF/tld/easyconf.tld" prefix="easyconf" %>
+
+        &lt;easyconf:property id="static_portlets"
+                   component="xpression-ui"
+                   property="static.portlets"
+                   type="java.util.List"/>
+        &lt;logic:iterate id="item" name="static_portlets">
+           &lt;bean:write name="item"/>
+        &lt;/logic:iterate>
+
+        &lt;easyconf:property id="registration_disabled"
+                   component="my-component"
+                   property="registration.disabled"/>
+        &lt;logic:equal name="registration_disabled" value="true">
+           &lt;bean:message key="registration.disabled"/>
+        &lt;/logic:equal>
+</pre>
+Los valores soportados en el parametro type son: java.util.List, java.lang.Integer , java.lang.String
+                                              java.lang.Double, java.lang.Float,  java.lang.Byte
+                                              java.math.BigDecimal, java.lang.BigInteger, java.lang.Boolean
+                                              java.lang.Short y java.lang.Long.
+
+
+<h1>Structure of a component configuration</h1>
+The configuration is an instance of <code>ComponentConfiguration</code> which is
+composed of:
+<ul>
+ <li><b>XML based configuration</b>: An object graph obtained from an XML file
+ <li><b>Properties based configuration</b>: A <code>ComponentProperties</code>
+object from serveral 'properties' files.
+</ul>
+
+<h2>XML based configuration</h2>
+The XML configuration of a component is read using Digester from Jakarta and
+is converted to objects using the information of two files:
+<ul>
+  <li><code>${componentName}.xml</code>: Contains the specific XML with the
+       configuration of the component.
+  <li><code>${componentName}.digesterRules.xml</code>: Contains the rules which
+       the parser should use to convert the XML file to objects
+</ul>
+The result of reading this configuration is a graph of regular Java objects
+(POJOs) which can be used without limitations by the software component.
+
+A nice additional feature of the XML based configuration is that the values
+of any of its elements or attributes can contain variables whose values are defined in
+the properties based configuration. The variable should be of the form
+<code>${variableName}</code>.
+
+For example, the following XML fragment can be used:
+<p><code>
+  &lt;welcome-msg>
+    Bienvenido a ${server.name}
+  &lt;/welcome-msg>
+</code></p>
+As long as there is a property named <code>server.name</code> as explained next.
+
+<h2>Properties based configuration</h2>
+The properties configuration of a module is obtained from a composition of the
+following files:
+<ol>
+     <li>${componentName}.properties
+     <li>global-configuration.properties
+</ol>
+In case of collision the values of global-configuration.properties
+will override the ones in the specific properties file.
+
+Furthermore, any of this files can include other files which contain overridden
+values for any of its properties. This is done with a special property whose key
+is <code>include-and-override</code>. This property is multivaluated
+so that several files can be included. In case of collision of values among the
+included files the ones specified last will override the previous ones.
+
+A usual pattern is to include the following properties in
+<code>global-configuration.properties</code>:
+ <p><code>
+  include-and-override=global-configuration-env.properties
+  include-and-override=global-configuration-prj.properties
+</code></p>
+
+Which allows any property in any component to be redefined for a especific
+environment and for a specific project. Note that if the specified file does
+not exist it will be ignored silently.
+
+<h3>Access to system properties</h3>
+EasyConf makes available all system properties as variables that can be used
+in the values of the properties files. For example, if the application is
+run using the following command:
+<p><code>
+   java ......... -Dinstallation-dir=/opt/application
+</code></p>
+You can use the variable ${installation-dir} in a properties file. For example:
+ <p><code>
+    readme.file.path=${installation-dir}/README
+</code></p>
+
+<h3>Support for environment configuration</h3>
+The support for environment configuration is based on the access to system
+properties and the special <tt>include-and-override</tt> property.
+
+Using a system property you can set the name of the current environment. For
+example:
+ <p><code>
+   java ......... -Dconfiguration-environment=production
+</code></p>
+Then in <code>global-configuration.properties</code> you can set the following
+property:
+ <p><code>
+  include-and-override=global-configuration-${configuration-environment}.properties
+</code></p>
+Which in the previous example will cause EasyConf to load the file
+<code>global-configuration-production.properties</code>. Using this pattern
+you can have an application EAR, WAR or JAR which contains the configuration
+for all the environments and then set a system property when running the
+application to select which configuration should be used.
+
+As usual, the referenced files that do not exist they will be silently ignored.
+If the JVM property is not defined no file will be loaded.
+
+<h3>Properties format</h3>
+The format of the properties files is the same as the standard Java
+properties with the following additions:
+<ul>
+  <li>The properties are typed so if the value is a number it can be
+      retrieved as an int or long. If the value is 'true' or 'false'
+      it can be retrieved as a boolean, etc. For example:
+      <pre>
+      long-property=5
+      boolean-poroperty=true
+      </pre>
+  <li>Multivalued properties are supported: if the same key is used or
+      several values are specified separated with commas they will be
+      automaticaly converted to a <code>List</code>. For example:
+      <pre>
+      valid-values=one,two,three,four
+      </pre>
+      <b>Important</b>:
+      if the value of a property contains a comma but you do not want
+      it converted to a list the comma should be scaped with a double
+      slash. For example:
+      <pre>
+       a-property=Once upon a time\\, there was a princess...
+      </pre>
+   <li>The value of some variables can contain others using
+       variables. For example:
+       <pre>
+       database-type=oracle
+       sql-file=insert-${database-type}.sql
+       </pre>
+</ul>
+For more information about the format of the properties read:
+<ul>
+  <li><a href="http://jakarta.apache.org/commons/configuration/">The
+      Jakarta Commons Configuration Website</a>
+  <li><a
+      href="http://jakarta.apache.org/commons/configuration/apidocs/org/apache/commons/configuration/PropertiesConfiguration.html">Javadoc for the class which reads the properties</a>
+</ul>
+Note that not all the funcionalities of Commons Configuration are
+available in easyconf, particularly the way to read XML as EasyConf
+provides a more powerful mechanism.
+</body>
+</html>

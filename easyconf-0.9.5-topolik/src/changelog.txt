@@ -1,0 +1,7 @@
+##
+## Description of changes
+##
+This file is obsolete!!
+
+Changes to 0.5
+- Renamed easyconf.ext.files as overriden-properties.files
