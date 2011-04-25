@@ -2,7 +2,7 @@ h1. Extlet6
 
 Extlet6 aims to simplify development with Ext Plugin in Liferay. 
 
-It's based on Ext Plugin and inspired by "Extlet":http://wiki.github.com/topolik/extlet6/ 
+It's based on Ext Plugin and inspired by "Extlet":http://wiki.github.com/topolik/extlet/ 
 
 It's the planned support of Extlet for Liferay 6.
 
