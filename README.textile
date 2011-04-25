@@ -1,0 +1,22 @@
+h1. Extlet6
+
+Extlet6 aims to simplify development with Ext Plugin in Liferay. 
+
+It's based on Ext Plugin and inspired by "Extlet":http://wiki.github.com/topolik/extlet6/ 
+
+It's the planned support of Extlet for Liferay 6.
+
+"http://github.com/topolik/extlet6":http://github.com/topolik/extlet6/
+by Tomáš Polešovský, "IBA CZ, s. r. o.":http://www.ibacz.eu/
+
+h2. News
+* Planning - Tool for Migration from Extlet into Ext Plugin
+* Planning - http://issues.liferay.com/browse/
+* Planning - http://issues.liferay.com/browse/LPS-9442
+* *25.04.11* - Created repository
+
+h2. Quick Overview
+
+* Main task is to fix LPS-9442 and LPS-14221 and make (a) contribution into portal and (b) artefacts for Tomcat for easy adoption.
+
+
