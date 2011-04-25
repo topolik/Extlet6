@@ -22,7 +22,6 @@ package com.germinus.easyconf;
  *
  */
 public interface Conventions {
-
     char SELECTOR_START = '[';
     char SELECTOR_END = ']';
     char DOT = '.';
@@ -37,6 +36,7 @@ public interface Conventions {
 
     String DATASOURCE_PREFIX = "datasource:";
     String JNDI_PREFIX = "jndi:";
+    String CLASS_PREFIX = "class:";
 
     String RELOAD_DELAY_PROPERTY = "easyconf:reload-delay";
 	String CONFIGURATION_OBJECTS_SOURCE_PROPERTY = "easyconf:configuration-objects-source";

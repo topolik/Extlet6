@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *	 http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -136,6 +136,8 @@ public class AggregatedProperties extends CompositeConfiguration {
 				newConf = addDatasourceProperties(sourceName);
 			} else if (JndiURL.isJndi(sourceName)) {
 				newConf = addJndiProperties(sourceName);
+			} else if (isClass(sourceName)){
+				newConf = addConfigurationClass(sourceName);
 			} else {
 				newConf = addFileProperties(sourceName, loadedConf);
 			}
@@ -156,6 +158,40 @@ public class AggregatedProperties extends CompositeConfiguration {
 			}
 			return null;
 		}
+	}
+
+	private boolean isClass(String sourceName){
+		return sourceName != null && sourceName.startsWith(Conventions.CLASS_PREFIX);
+	}
+
+
+	private Configuration addConfigurationClass(String sourceName) throws ConfigurationException {
+		String className = sourceName.substring(Conventions.CLASS_PREFIX.length() - 1);
+		Class c;
+		try {
+			c = ClasspathUtil.locateClass(className);
+		} catch (ClassNotFoundException ex) {
+			if (log.isWarnEnabled()) {
+				log.warn("Configuration source " + sourceName + " ignored", ex);
+			}
+			return null;
+		}
+		if(Configuration.class.isAssignableFrom(c)){
+			Configuration newConf;
+			try {
+				newConf = (Configuration) c.newInstance();
+				return newConf;
+			} catch (Exception ex) {
+				if (log.isWarnEnabled()) {
+					log.warn("Configuration class " + c.getName() + " cannot be created!", ex);
+				}
+			}
+		} else {
+			if (log.isWarnEnabled()) {
+				log.warn("Configuration class " + c.getName() + " doesn't implement Configuration interface!");
+			}
+		}
+		return null;
 	}
 
 	private Configuration addFileProperties(String fileName,
@@ -197,10 +233,10 @@ public class AggregatedProperties extends CompositeConfiguration {
 	}
 
 private Configuration addDatasourceProperties(String datasourcePath) {
-        DatasourceURL dsUrl = new DatasourceURL(datasourcePath, companyId, componentName, 
-        						DatasourceURL.PROPERTIES_TABLE);
-        return dsUrl.getConfiguration();
-    }	private Configuration addJndiProperties(String sourcePath) {
+		DatasourceURL dsUrl = new DatasourceURL(datasourcePath, companyId, componentName, 
+								DatasourceURL.PROPERTIES_TABLE);
+		return dsUrl.getConfiguration();
+	}	private Configuration addJndiProperties(String sourcePath) {
 		JNDIConfiguration conf = null;
 		JndiURL jndiUrl = new JndiURL(sourcePath, companyId, componentName);
 		return jndiUrl.getConfiguration();
