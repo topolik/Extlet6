@@ -236,4 +236,7 @@
       </plugin>
     </plugins>
   </reporting>
+  <properties>
+    <test.run.type>All</test.run.type>
+  </properties>
 </project>
