@@ -257,6 +257,12 @@ public class EasyConfTest extends TestCase {
     				 "env", 
 					 getProperties().getString("string-overridden-in-prj-and-env"));
     }
+
+    public void testReadStringOverriddenInPrjAndTestConfiguration() {
+        assertEquals("Invalid value for string-overridden-in-prj-and-testConfiguration",
+                     "testConfiguration",
+                     getProperties().getString("string-overridden-in-prj-and-testConfiguration"));
+    }
     
     public void testReadListNotOverridden() {
     	List expected = Arrays.asList(new String[]{"test_module1", "test_module2"});

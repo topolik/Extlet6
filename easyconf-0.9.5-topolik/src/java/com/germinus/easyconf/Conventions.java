@@ -49,4 +49,6 @@ public interface Conventions {
     String PREFIX_SEPARATOR = ":";
     
 	String DEFAULT_CONF_OBJECT_NAME = "DEFAULT_CONF_OBJECT";
+
+    String PLUS_SIGN = "+";
 }

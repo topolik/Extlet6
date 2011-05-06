@@ -43,6 +43,7 @@ public class UnitTests extends TestCase {
         TestSuite suite = new TestSuite("Junit Tests");
         suite.addTest(EasyConfTest.suite());
         suite.addTestSuite(JMXTest.class);
+        suite.addTestSuite(MergingTest.class);
         return suite;
     }
 

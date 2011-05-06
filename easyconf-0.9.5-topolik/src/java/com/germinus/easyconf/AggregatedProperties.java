@@ -43,13 +43,13 @@ import java.util.*;
  * 
  * @author jferrer
  */
-public class AggregatedProperties extends CompositeConfiguration {
+public class AggregatedProperties extends MergingCompositeConfiguration {
 	private static final Log log = LogFactory
 			.getLog(AggregatedProperties.class);
 
-	private CompositeConfiguration baseConf = new CompositeConfiguration();
+	private CompositeConfiguration baseConf = new MergingCompositeConfiguration();
 
-	private CompositeConfiguration globalConf = new CompositeConfiguration();
+	private CompositeConfiguration globalConf = new MergingCompositeConfiguration();
 
 	private SystemConfiguration systemConfiguration = new SystemConfiguration();
 
@@ -166,7 +166,7 @@ public class AggregatedProperties extends CompositeConfiguration {
 
 
 	private Configuration addConfigurationClass(String sourceName) throws ConfigurationException {
-		String className = sourceName.substring(Conventions.CLASS_PREFIX.length() - 1);
+		String className = sourceName.substring(Conventions.CLASS_PREFIX.length());
 		Class c;
 		try {
 			c = ClasspathUtil.locateClass(className);
