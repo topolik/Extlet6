@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.configuration.CompositeConfiguration;
 import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConversionException;
 
 /**
  * CompositeConfiguration that merges values of every loaded configuration. <br />
@@ -57,13 +56,13 @@ public class MergingCompositeConfiguration extends CompositeConfiguration {
      * Iterates through all configurations from lowest to highest priority based on following rules (see {@link CompositeConfiguration#getProperty(java.lang.String)}) :<br />
      * <ul>
      * <li>Configuration at index 0 has the highest priority</li>
-     * <li>Configuration at index <i>i+1</i> has lower priority than Configuration at index <i>i</i></li>
+     * <li>Configuration at index {@code i+1} has lower priority than Configuration at index {@code i}</li>
      * </ul>
      * <br />
      * And merge every configuration based on following rules (see {@link MergingCompositeConfiguration#mergeConfiguration}:<br />
      * <ul>
-     * <li>If configuration contains <i>key=newValue1,newValue2</i> then replace result with new values =&gt; <i>result = [newValue1, newValue2]</i></li>
-     * <li>If configuration contains <i>key+=newValue1,newValue2</i> then add value to existing result =&gt; <i>result = [value1, value2, ..., newValue1, newValue2]</i></li>
+     * <li>If configuration contains {@code key=newValue1,newValue2} then replace result with new values =&gt; {@code result = [newValue1, newValue2]}</li>
+     * <li>If configuration contains {@code key+=newValue1,newValue2} then add value to existing result =&gt; {@code result = [value1, value2, ..., newValue1, newValue2]}</li>
      * </ul>
      *
      * @param mergingKey key+
@@ -71,10 +70,10 @@ public class MergingCompositeConfiguration extends CompositeConfiguration {
      * @return List of values
      */
     protected Object getMergedProperty(String mergingKey, String simpleKey) {
-        List result = new ArrayList();
+        int size = getNumberOfConfigurations();
+        List result = new ArrayList(size);
 
         // iterates backwards from lower priority to higher
-        int size = getNumberOfConfigurations();
         for (int i = size-1; i >= 0; i--) {
             Configuration conf = getConfiguration(i);
             mergeConfiguration(conf, mergingKey, simpleKey, result);
@@ -83,7 +82,7 @@ public class MergingCompositeConfiguration extends CompositeConfiguration {
         return result;
     }
 
-    private void mergeConfiguration(Configuration conf, String mergingKey, String simpleKey, List result){
+    protected void mergeConfiguration(Configuration conf, String mergingKey, String simpleKey, List result){
         if (conf.containsKey(simpleKey)) {
             result.clear();
             addPropertyToResult(result, simpleKey, conf);
@@ -93,7 +92,7 @@ public class MergingCompositeConfiguration extends CompositeConfiguration {
         }
     }
 
-    private void addPropertyToResult(List result, String key, Configuration conf) {
+    protected void addPropertyToResult(List result, String key, Configuration conf) {
         Object value = conf.getProperty(key);
         if(value instanceof List){
             result.addAll((List) value);
