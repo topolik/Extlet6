@@ -11,8 +11,8 @@ by Tomáš Polešovský, "IBA CZ, s. r. o.":http://www.ibacz.eu/
 
 h2. News
 * Planning - Tool for Migration from Extlet into Ext Plugin
-* Planning - "LPS-14221: Ext Plugin Redeploy":http://issues.liferay.com/browse/LPS-14221
-* *Working on* "LPS-9442: Extlet features -> Ext plugin":http://issues.liferay.com/browse/LPS-9442
+* *Working on* - "LPS-14221: Ext Plugin Redeploy":http://issues.liferay.com/browse/LPS-14221
+* *16.04.11* - "LPS-9442: Extlet features to Ext plugin":http://issues.liferay.com/browse/LPS-9442
 * *25.04.11* - Created repository
 
 h2. Quick Overview
