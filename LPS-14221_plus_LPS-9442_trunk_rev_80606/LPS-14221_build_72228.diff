@@ -1,0 +1,220 @@
+Index: portal-impl/src/com/liferay/portal/deploy/hot/ExtHotDeployListener.java
+===================================================================
+--- portal-impl/src/com/liferay/portal/deploy/hot/ExtHotDeployListener.java	(revision 72276)
++++ portal-impl/src/com/liferay/portal/deploy/hot/ExtHotDeployListener.java	(working copy)
+@@ -37,7 +37,9 @@
+ import java.io.FileOutputStream;
+ import java.io.InputStream;
+ 
++import java.util.ArrayList;
+ import java.util.Iterator;
++import java.util.List;
+ import java.util.Map;
+ import java.util.Set;
+ 
+@@ -88,6 +90,31 @@
+ 		StreamUtil.transfer(is, new FileOutputStream(new File(newJarFullName)));
+ 	}
+ 
++	protected void copyWebFiles(
++		String portalWebDir, String pluginWebDir, 
++		String servletContextName) throws Exception {
++
++		Set<String> files = ExtRegistry.getFiles(servletContextName);
++		for(String file : files){
++			if(file.startsWith("ext-web/docroot/") && 
++				!file.equals("ext-web/docroot/WEB-INF/web.xml")) {
++
++				String relativeFile = file.substring(
++					file.indexOf("docroot/") + "docroot/".length());
++
++				File portalFile = new File(portalWebDir, relativeFile);
++				File portalBackupFile = new File(
++					portalWebDir, relativeFile + ".backup");
++
++				File pluginFile = new File(pluginWebDir + "WEB-INF/", file);
++				if(portalFile.exists()){
++					FileUtil.move(portalFile, portalBackupFile);
++				}
++				FileUtil.copyFile(pluginFile, portalFile);
++			}
++		}
++	}
++
+ 	protected void installExt(
+ 			ServletContext servletContext, ClassLoader portletClassLoader)
+ 		throws Exception {
+@@ -107,15 +134,13 @@
+ 
+ 		mergeWebXml(portalWebDir, pluginWebDir);
+ 
+-		CopyTask.copyDirectory(
+-			pluginWebDir + "WEB-INF/ext-web/docroot", portalWebDir,
+-			StringPool.BLANK, "**/WEB-INF/web.xml", true, false);
++		ExtRegistry.registerExt(servletContext);
++		copyWebFiles(portalWebDir, pluginWebDir, servletContextName);
+ 
+ 		FileUtil.copyFile(
+ 			pluginWebDir + "WEB-INF/ext-" + servletContextName + ".xml",
+ 			portalWebDir + "WEB-INF/ext-" + servletContextName + ".xml");
+ 
+-		ExtRegistry.registerExt(servletContext);
+ 	}
+ 
+ 	protected void doInvokeDeploy(HotDeployEvent event) throws Exception {
+@@ -135,6 +160,20 @@
+ 			return;
+ 		}
+ 
++		if (_redeployServletContextNames.contains(servletContextName) && 
++			ExtRegistry.isRegistered(servletContextName)) {
++
++			if (_log.isInfoEnabled()) {
++				_log.info(
++					"Undeploying extension environment for " + servletContextName);
++			}
++			uninstallExt(servletContextName);
++			if (_log.isInfoEnabled()) {
++				_log.info(
++					"Extension environment " + servletContextName + " has been undeployed.");
++			}
++		}
++
+ 		if (_log.isInfoEnabled()) {
+ 			_log.info(
+ 				"Registering extension environment for " + servletContextName);
+@@ -184,8 +223,16 @@
+ 			return;
+ 		}
+ 
+-		installExt(servletContext, event.getContextClassLoader());
++		try {
++			installExt(servletContext, event.getContextClassLoader());
++		} catch (Exception e) {
++			// rollback
++			uninstallExt(servletContextName);
+ 
++			throw e;
++		}
++
++
+ 		FileAvailabilityUtil.reset();
+ 
+ 		if (_log.isInfoEnabled()) {
+@@ -213,6 +260,10 @@
+ 			return;
+ 		}
+ 
++		if(ExtRegistry.isRegistered(servletContextName)){
++			_redeployServletContextNames.add(servletContextName);
++		}
++
+ 		if (_log.isInfoEnabled()) {
+ 			_log.info(
+ 				"Extension environment for " +
+@@ -243,12 +294,86 @@
+ 
+ 		tmpWebXml.setLastModified(portalWebXml.lastModified());
+ 
++		File originalWebXml = new File(portalWebDir + "WEB-INF", "web.xml.original");
++		FileUtil.copyFile(portalWebXml, originalWebXml);
++		originalWebXml.setLastModified(portalWebXml.lastModified());
++
+ 		CopyTask.copyFile(
+ 			tmpWebXml, new File(portalWebDir + "WEB-INF"), true, true);
+ 
+ 		FileUtil.deltree(tmpDir);
+ 	}
+ 
++	protected void removeJar(
++			String servletContextName, String dir, String jarName)
++			throws Exception {
++
++		String newJarFullName =
++				dir + "ext-" + servletContextName + jarName.substring(3) + ".jar";
++
++		FileUtil.delete(newJarFullName);
++	}
++
++	protected void resetPortalWebFiles(
++		String servletContextName, String portalWebDir) {
++
++		Set<String> files = ExtRegistry.getFiles(servletContextName);
++		for(String file : files){
++			if(file.startsWith("ext-web/docroot/") && !file.equals(
++				"ext-web/docroot/WEB-INF/web.xml")) {
++
++				String relativeFile = file.substring(
++					file.indexOf("docroot/") + "docroot/".length());
++
++				File portalFile = new File(portalWebDir, relativeFile);
++				File portalBackupFile = new File(
++					portalWebDir, relativeFile + ".backup");
++
++				FileUtil.delete(portalFile);
++				if(portalBackupFile.exists()){
++					FileUtil.move(portalFile, portalBackupFile);
++				}
++				FileUtil.move(portalBackupFile, portalFile);
++			}
++		}
++	}
++
++	protected void resetWebXml(String servletContextName, String portalWebDir) {
++		Set<String> files = ExtRegistry.getFiles(servletContextName);
++		if (!files.contains("ext-web/docroot/WEB-INF/web.xml")) {
++			return;
++		}
++
++		File originalWebXml = new File(portalWebDir + "WEB-INF/web.xml.original");
++		File portalWebXml = new File(portalWebDir + "WEB-INF", "web.xml");
++		FileUtil.copyFile(originalWebXml, portalWebXml);
++		portalWebXml.setLastModified(originalWebXml.lastModified());
++	}
++
++	protected void uninstallExt(String servletContextName) throws Exception {
++
++		String globalLibDir = PortalUtil.getGlobalLibDir();
++		String portalWebDir = PortalUtil.getPortalWebDir();
++		String portalLibDir = PortalUtil.getPortalLibDir();
++
++		removeJar(servletContextName, globalLibDir, "ext-service");
++		removeJar(servletContextName, portalLibDir, "ext-impl");
++		removeJar(servletContextName, portalLibDir, "ext-util-bridges");
++		removeJar(servletContextName, portalLibDir, "ext-util-java");
++		removeJar(servletContextName, portalLibDir, "ext-util-taglib");
++
++		resetWebXml(servletContextName, portalWebDir);
++
++		resetPortalWebFiles(servletContextName, portalWebDir);
++
++		FileUtil.delete(
++				portalWebDir + "WEB-INF/ext-" + servletContextName + ".xml");
++
++		ExtRegistry.unregisterExt(servletContextName);
++	}
++	
+ 	private static Log _log = LogFactoryUtil.getLog(ExtHotDeployListener.class);
++	private static List<String> _redeployServletContextNames =
++			new ArrayList<String>();
+ 
+ }
+\ No newline at end of file
+Index: portal-impl/src/com/liferay/portal/util/ExtRegistry.java
+===================================================================
+--- portal-impl/src/com/liferay/portal/util/ExtRegistry.java	(revision 72276)
++++ portal-impl/src/com/liferay/portal/util/ExtRegistry.java	(working copy)
+@@ -33,6 +33,13 @@
+  */
+ public class ExtRegistry {
+ 
++	public static Set<String> getFiles(String servletContextName){
++		return Collections.unmodifiableSet(_extMap.get(servletContextName));
++	}
++
++	public static void unregisterExt(String servletContextName){
++		_extMap.remove(servletContextName);
++	}
+ 	public static Map<String, Set<String>> getConflicts(
+ 			ServletContext servletContext)
+ 		throws Exception {
