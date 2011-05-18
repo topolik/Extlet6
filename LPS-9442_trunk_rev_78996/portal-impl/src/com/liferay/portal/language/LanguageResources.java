@@ -201,7 +201,7 @@ public class LanguageResources {
 				if (url != null) {
 					InputStream inputStream = url.openStream();
 
-					properties = PropertiesUtil.load(inputStream, StringPool.UTF8);
+					properties.putAll(PropertiesUtil.load(inputStream, StringPool.UTF8));
 
 					inputStream.close();
 
