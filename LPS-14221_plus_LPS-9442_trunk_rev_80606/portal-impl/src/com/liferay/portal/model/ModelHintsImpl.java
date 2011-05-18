@@ -214,8 +214,8 @@ public class ModelHintsImpl implements ModelHints {
 	}
 
 	public void read(ClassLoader classLoader, String source) throws Exception {
-        read(classLoader, source, classLoader.getResourceAsStream(source));
-    }
+		read(classLoader, source, classLoader.getResourceAsStream(source));
+	}
 
 	public void read(ClassLoader classLoader, String source, InputStream is) throws Exception {
 		if (is == null) {

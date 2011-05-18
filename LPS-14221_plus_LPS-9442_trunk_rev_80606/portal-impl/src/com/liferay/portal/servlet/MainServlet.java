@@ -359,7 +359,7 @@ public class MainServlet extends ActionServlet {
 		}
 	}
 
-        @Override
+	@Override
 	protected void initOther() throws ServletException {
 		super.initOther();
 
@@ -367,7 +367,7 @@ public class MainServlet extends ActionServlet {
 
 		ClassLoader portalClassLoader = com.liferay.portal.kernel.util.PortalClassLoaderUtil.getClassLoader();
 		try {
-                        String resourceName = "WEB-INF/struts-config-ext.xml";
+			String resourceName = "WEB-INF/struts-config-ext.xml";
 			Enumeration<URL> urls = portalClassLoader.getResources(resourceName);
 			if (_log.isDebugEnabled() && !urls.hasMoreElements()) {
 				_log.debug("No " + resourceName + " has been found");
@@ -386,7 +386,7 @@ public class MainServlet extends ActionServlet {
 		super.config = sb.toString();
 	}
 
-        @Override
+	@Override
 	protected void parseModuleConfigFile(Digester digester, String path)
 			throws UnavailableException {
 

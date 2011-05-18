@@ -137,39 +137,39 @@ public class PortalHibernateConfiguration extends LocalSessionFactoryBean {
 
 		ClassLoader classLoader = getConfigurationClassLoader();
 
-        if(!resource.startsWith("classpath*:")){
-		InputStream is = classLoader.getResourceAsStream(resource);
-		readResource(configuration, resource, is);
-        } else {
-            String resourceName = resource.substring("classpath*:".length());
-            try {
-                Enumeration<URL> resources = 
-                    classLoader.getResources(resourceName);
-                    if (_log.isDebugEnabled() && !resources.hasMoreElements()) {
-                        _log.debug("No " + resourceName + " has been found");
-                    }
-		        while (resources.hasMoreElements()) {
-                    URL resourceFullName = resources.nextElement();
-		            try {
-		                InputStream is = new UrlResource(resourceFullName).getInputStream();
-		                readResource(configuration, resource, is);
-		            }
-		            catch (Exception e2) {
-			            if (_log.isWarnEnabled()) {
-				            _log.warn("Problem while loading " + resource, e2);
-			            }
-		            }
-                }
-            }
-            catch (Exception e2) {
-	            if (_log.isWarnEnabled()) {
-		            _log.warn("Problem while loading classLoader resources: " 
-                        + resourceName, e2);
-	            }
-            }
-        }
+		if(!resource.startsWith("classpath*:")){
+			InputStream is = classLoader.getResourceAsStream(resource);
+			readResource(configuration, resource, is);
+		} else {
+			String resourceName = resource.substring("classpath*:".length());
+			try {
+				Enumeration<URL> resources = 
+					classLoader.getResources(resourceName);
+					if (_log.isDebugEnabled() && !resources.hasMoreElements()) {
+						_log.debug("No " + resourceName + " has been found");
+					}
+				while (resources.hasMoreElements()) {
+					URL resourceFullName = resources.nextElement();
+					try {
+						InputStream is = new UrlResource(resourceFullName).getInputStream();
+						readResource(configuration, resource, is);
+					}
+					catch (Exception e2) {
+						if (_log.isWarnEnabled()) {
+							_log.warn("Problem while loading " + resource, e2);
+						}
+					}
+				}
+			}
+			catch (Exception e2) {
+				if (_log.isWarnEnabled()) {
+					_log.warn("Problem while loading classLoader resources: " 
+						+ resourceName, e2);
+				}
+			}
+		}
 
-    }
+	}
 
 	protected void readResource(Configuration configuration, String resource, InputStream is)
 		throws Exception {

@@ -99,7 +99,7 @@ public class InitUtil {
 				classLoader.getResource("META-INF/portal-log4j.xml"));
 			try {
 				Log _log = LogFactoryUtil.getLog(InitUtil.class);
-                            
+
 				String configName = "META-INF/portal-log4j-ext.xml";
 				Enumeration<URL> configs = 
 					classLoader.getResources(configName);
