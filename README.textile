@@ -11,7 +11,7 @@ by Tomáš Polešovský, "IBA CZ, s. r. o.":http://www.ibacz.eu/
 
 h2. News
 
-*Please use patches carefully. If you find bug then please "create ticket":https://github.com/topolik/Extlet6/issues*
+*Please use patches carefully. If you find bug then please "create ticket":https://github.com/topolik/Extlet6/issues/new*
 
 * *Working on* - Tool for Migration from Extlet into Ext Plugin
 * *26.05.11* - Patch for Liferay 6.0.6 - "liferay-6.0.6-patch.zip":https://github.com/downloads/topolik/Extlet6/liferay-6.0.6-patch.zip - please unzip into tomcat/webapps/ROOT directory
