@@ -11,8 +11,8 @@ by Tomáš Polešovský, "IBA CZ, s. r. o.":http://www.ibacz.eu/
 
 h2. News
 * *Working on* - Tool for Migration from Extlet into Ext Plugin
-* *26.05.11* - Patch for Liferay 6.0.6 - "liferay-6.0.6-patch.zip":https://github.com/topolik/Extlet6/blob/master/liferay-6.0.6-patch/liferay-6.0.6-patch.zip - please unzip into tomcat/webapps/ROOT directory
-* *18.05.11* - Patch for Liferay 6.0.5 - "liferay-6.0.5-patch.zip":https://github.com/topolik/Extlet6/blob/master/liferay-6.0.5-patch/liferay-6.0.5-patch.zip - please unzip into tomcat/webapps/ROOT directory
+* *26.05.11* - Patch for Liferay 6.0.6 - "liferay-6.0.6-patch.zip":https://github.com/downloads/topolik/Extlet6/liferay-6.0.6-patch.zip - please unzip into tomcat/webapps/ROOT directory
+* *18.05.11* - Patch for Liferay 6.0.5 - "liferay-6.0.5-patch.zip":https://github.com/downloads/topolik/Extlet6/liferay-6.0.5-patch.zip - please unzip into tomcat/webapps/ROOT directory
 * *18.05.11* - "LPS-14221: Ext Plugin Redeploy":http://issues.liferay.com/browse/LPS-14221
 * *16.04.11* - "LPS-9442: Extlet features to Ext plugin":http://issues.liferay.com/browse/LPS-9442
 * *25.04.11* - Created repository
